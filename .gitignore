@@ -1,3 +1,5 @@
+# config
+.env
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,vscode,linux,vim,go
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,vscode,linux,vim,go
