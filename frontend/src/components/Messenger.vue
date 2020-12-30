@@ -1,45 +1,61 @@
 <template>
+  <MenuBar :roomName="props.roomName" @disconnect="disconnect" />
   <div class="messages">
     <Message
-      style="margin: 5px"
       v-for="(message, idx) in messages"
-      :key="idx"
       :message="message"
+      :mine="myID === message.senderID"
+      :displaySender="(myID !== message.senderID) && (messages[idx-1] ?? {sender: null}).senderID !== message.senderID"
+      :key="idx"
     />
   </div>
 
   <div class="message-input-bar">
-    <MessageInput @send="sendMessage" />
+    <MessageInput @send="onSend" />
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import Message from '@/components/Message.vue';
-import MessageInput from '@/components/MessageInput.vue';
-
+import { ref } from "vue";
+import Message from "./Message.vue";
+import MessageInput from "./MessageInput.vue";
+import MenuBar from "./MenuBar.vue";
 export default {
-  name: 'Messenger',
-  components: {
-    Message,
-    MessageInput
+  components: { Message, MessageInput, MenuBar },
+  name: "Messenger",
+  emits: ['disconnect'],
+  props: {
+    token: String,
+    roomID: Number,
+    roomName: String
   },
-
-  setup() {
-    const socket = new WebSocket('ws://localhost:8080');
-
+  setup(props, {emit}) {
+    const myID = ref('');
+    const socket = new WebSocket(`ws://localhost:8080/room/${props.roomID}?token=${encodeURIComponent(props.token)}`);
     const messages = ref([]);
-    const sendMessage = message => {
-      socket.send(message);
-    }
-
-    socket.onmessage = (message) => {
-      messages.value.push(message.data);
-    }
-
+    const parseJwt = (token) => {
+      try {
+        return JSON.parse(atob(token.split('.')[1]));
+      } catch (e) {
+        return null;
+      }
+    };
+    const parsedToken = parseJwt(props.token)
+    myID.value = parsedToken.uid
+    const onSend = message =>
+      socket.send(
+        JSON.stringify({
+          text: message,
+        })
+      );
+    socket.onmessage = messageEvent =>
+      messages.value.push(JSON.parse(messageEvent.data));
     return {
+      myID,
       messages,
-      sendMessage
+      onSend,
+      props,
+      disconnect: () => emit('disconnect')
     };
   }
 };
@@ -50,18 +66,18 @@ export default {
   width: 500px;
   height: 100%;
   margin: auto;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-
   flex-grow: 1;
   overflow: auto;
   padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  padding-top: 70px;
+  padding-bottom: 70px;
 }
 
 .message-input-bar {

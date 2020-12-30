@@ -21,6 +21,7 @@ import { ref, computed } from "vue";
 
 export default {
   name: "MessageInput",
+  emits: ['send'],
 
   setup(props, { emit }) {
     const message = ref("");
@@ -101,6 +102,7 @@ export default {
 .message-input-form input[type="submit"]:focus {
   outline: none;
 }
+
 .message-input-form input[type="submit"]:hover {
   background-color: #e0d041;
 }
@@ -108,4 +110,5 @@ export default {
 .message-input-form input[type="submit"]:disabled {
   background-color: #ddd;
 }
+
 </style>

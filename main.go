@@ -25,8 +25,6 @@ func main() {
 		log.Fatalln("DB Connection error:", err)
 	}
 
-	log.Println("hello db:", os.Getenv("DB_URL"))
-
 	if err := http.ListenAndServe(":"+os.Getenv("PORT"), api.Handler()); err != nil {
 		log.Fatalln(err)
 	}
